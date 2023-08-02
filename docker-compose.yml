@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  healthchecks-front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: healthchecks-front
+    ports:
+      - "3000:3000"
