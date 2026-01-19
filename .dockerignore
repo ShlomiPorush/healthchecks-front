@@ -1,0 +1,44 @@
+# Dependencies
+node_modules
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output (we build inside Docker)
+.next
+out
+
+# Development files
+*.md
+README.md
+LICENSE
+
+# Environment files (we pass via build args)
+.env
+.env.local
+.env.*.local
+.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+docker-compose-dev.yml
+docker-compose.yml
+docker-entrypoint.sh
+Dockerfile
+.dockerignore
+.gitignore

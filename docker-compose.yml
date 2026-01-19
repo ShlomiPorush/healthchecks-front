@@ -1,9 +1,12 @@
-version: '3.8'
 services:
   healthchecks-front:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: healthchecks-front
+    image: shlomip/healthchecks-front:latest
     ports:
-      - "3000:3000"
+      - 3000:3000
+    environment:
+      # Required: Your Healthchecks.io API URL
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      # Required: Your Healthchecks.io API key
+      - NEXT_PUBLIC_APIKEY=${NEXT_PUBLIC_APIKEY}
+      # Optional: Custom name for your dashboard
+      - NEXT_PUBLIC_NAME=${NEXT_PUBLIC_NAME:-Healthchecks Dashboard}

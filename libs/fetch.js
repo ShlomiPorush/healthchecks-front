@@ -1,14 +1,20 @@
-export default async function fetcher(...args) {
-    args[0] = "https://hc.mosesnet.net/api" + args[0];
+// Fetcher for SWR - calls our internal API route (server-side proxy)
+export default async function fetcher(url) {
+    // Map the Healthchecks API path to our internal API route
+    const internalUrl = url.replace("/v1/checks/", "/api/checks");
 
-    args[1] = {
-        ...args[1],
+    const res = await fetch(internalUrl, {
         headers: {
-            Accept: "application/json",
-            "X-Api-Key": process.env.NEXT_PUBLIC_APIKEY,
+            "Accept": "application/json",
         },
-    };
+    });
 
-    const res = await fetch(...args);
+    if (!res.ok) {
+        const error = new Error("Failed to fetch data");
+        error.status = res.status;
+        throw error;
+    }
+
     return res.json();
 }
+

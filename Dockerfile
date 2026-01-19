@@ -1,26 +1,23 @@
-# Use the official Node.js LTS (Long Term Support) image as the base image
-FROM node:14
+# Use Node.js 16 LTS (compatible with Next.js 11)
+FROM node:16-alpine
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
+# Copy package files and install dependencies
 COPY package*.json ./
-
-# Install project dependencies
 RUN npm install
 
-# Copy the entire project to the container's working directory
+# Copy source code and build
 COPY . .
-
-# Build the Next.js app for production
 RUN npm run build
 
-# Set the environment variable to indicate production mode
+# Production mode
 ENV NODE_ENV=production
 
-# Expose the port on which the Next.js app runs
 EXPOSE 3000
 
-# Start the Next.js app
+# Start Next.js - environment variables are read at runtime by the API route
 CMD ["npm", "start"]
+
+
+
