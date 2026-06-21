@@ -1,10 +1,14 @@
-import { CheckIcon } from "@heroicons/react/outline";
-import { XIcon } from "@heroicons/react/outline";
-import { PauseIcon } from "@heroicons/react/outline";
-import { ExclamationCircleIcon } from "@heroicons/react/outline";
-import { PlayIcon } from "@heroicons/react/solid";
-import { ClockIcon } from "@heroicons/react/solid";
-import { RefreshIcon } from "@heroicons/react/solid";
+import {
+    CheckIcon,
+    XMarkIcon as XIcon,
+    PauseIcon,
+    ExclamationCircleIcon,
+} from "@heroicons/react/24/outline";
+import {
+    PlayIcon,
+    ClockIcon,
+    ArrowPathIcon as RefreshIcon,
+} from "@heroicons/react/24/solid";
 
 import moment from "moment";
 import { cronToHuman } from "../libs/cronToHuman";

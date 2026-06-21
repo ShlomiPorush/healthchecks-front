@@ -1,5 +1,5 @@
-# Use Node.js 16 LTS (compatible with Next.js 11)
-FROM node:16-alpine
+# Use Node.js 20 LTS (required for Next.js 16)
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -18,6 +18,3 @@ EXPOSE 3000
 
 # Start Next.js - environment variables are read at runtime by the API route
 CMD ["npm", "start"]
-
-
-
