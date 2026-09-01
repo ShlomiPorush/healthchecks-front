@@ -6,7 +6,14 @@ import fetcher from "../libs/fetch";
 
 import Check from "../components/Check";
 
-import { XIcon, SearchIcon, SortAscendingIcon, SortDescendingIcon, EyeIcon, EyeOffIcon } from "@heroicons/react/outline";
+import {
+    XMarkIcon as XIcon,
+    MagnifyingGlassIcon as SearchIcon,
+    BarsArrowUpIcon as SortAscendingIcon,
+    BarsArrowDownIcon as SortDescendingIcon,
+    EyeIcon,
+    EyeSlashIcon as EyeOffIcon,
+} from "@heroicons/react/24/outline";
 
 export async function getServerSideProps() {
     return {
