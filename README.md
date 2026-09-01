@@ -25,7 +25,7 @@ The easiest way to run the dashboard is using the pre-built Docker image:
    ```yaml
    services:
      healthchecks-front:
-       image: shlomip/healthchecks-front:latest
+       image: ghcr.io/shlomiporush/healthchecks-front:latest
        ports:
          - 3000:3000
        environment:
@@ -48,8 +48,10 @@ docker run -d -p 3000:3000 \
   -e NEXT_PUBLIC_API_URL=https://healthchecks.io/api \
   -e NEXT_PUBLIC_APIKEY=your-api-key-here \
   -e NEXT_PUBLIC_NAME="My Dashboard" \
-  shlomip/healthchecks-front:latest
+  ghcr.io/shlomiporush/healthchecks-front:latest
 ```
+
+Replace `latest` with a release version such as `0.1.0` to pin the deployment.
 
 
 
