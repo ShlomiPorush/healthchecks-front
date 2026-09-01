@@ -1,6 +1,6 @@
 services:
   healthchecks-front:
-    image: shlomip/healthchecks-front:latest
+    image: ghcr.io/shlomiporush/healthchecks-front:latest
     ports:
       - 3000:3000
     environment:
