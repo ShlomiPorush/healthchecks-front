@@ -120,73 +120,56 @@ jobs:
           provenance: mode=max
           sbom: true
 
-      - name: Remove obsolete image tags
+      - name: Remove obsolete image versions
         if: github.event_name != 'pull_request'
         env:
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.verify.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_NAME: healthchecks-front
         shell: bash
         run: |
           set -euo pipefail
 
-          repository="shlomiporush/healthchecks-front"
-          registry_token="$({
-            curl --fail --silent --show-error \
-              --user "${GITHUB_ACTOR}:${GHCR_TOKEN}" \
-              "https://ghcr.io/token?service=ghcr.io&scope=repository:${repository}:pull,push,delete"
-          } | jq -r '.token')"
+          endpoint="/users/${GITHUB_REPOSITORY_OWNER}/packages/container/${PACKAGE_NAME}/versions"
+          versions="$({
+            gh api --paginate \
+              --slurp \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "${endpoint}?per_page=100"
+          } | jq 'add')"
 
-          if [[ -z "$registry_token" || "$registry_token" == "null" ]]; then
-            echo "GHCR did not issue a token for tag cleanup" >&2
+          retained_filter='def retained_tag:
+            . == "latest" or
+            test("^[0-9]+\\.[0-9]+\\.[0-9]+([-.][0-9A-Za-z.-]+)?$");'
+
+          mixed_versions="$({
+            jq -r "${retained_filter}
+              .[]
+              | (.metadata.container.tags // []) as \$tags
+              | select(
+                  ([\$tags[] | select(retained_tag)] | length) > 0 and
+                  ([\$tags[] | select(retained_tag | not)] | length) > 0
+                )
+              | \"\(.id): \(\$tags | join(\", \"))\"" <<< "$versions"
+          })"
+          if [[ -n "$mixed_versions" ]]; then
+            echo "Cannot remove obsolete tags that share a package version with retained tags:" >&2
+            echo "$mixed_versions" >&2
             exit 1
           fi
 
-          accept="application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json"
-
-          get_digest() {
-            curl --fail --silent --show-error --head \
-              --header "Authorization: Bearer ${registry_token}" \
-              --header "Accept: ${accept}" \
-              "https://ghcr.io/v2/${repository}/manifests/$1" \
-              | tr -d '\r' \
-              | awk -F': ' 'tolower($1) == "docker-content-digest" { print $2 }'
-          }
-
-          latest_digest="$(get_digest latest)"
-          version_digest="$(get_digest "$VERSION")"
-          mapfile -t tags < <(
-            curl --fail --silent --show-error \
-              --header "Authorization: Bearer ${registry_token}" \
-              "https://ghcr.io/v2/${repository}/tags/list" \
-              | jq -r '.tags[]'
+          mapfile -t obsolete_versions < <(
+            jq -r "${retained_filter}
+              .[]
+              | (.metadata.container.tags // []) as \$tags
+              | select([\$tags[] | select(retained_tag)] | length == 0)
+              | .id" <<< "$versions"
           )
 
-          declare -A deleted=()
-          for tag in "${tags[@]}"; do
-            if [[ "$tag" == "latest" || "$tag" == "$VERSION" ]]; then
-              continue
-            fi
-
-            digest="$(get_digest "$tag" || true)"
-            if [[ -z "$digest" || -n "${deleted[$digest]:-}" ]]; then
-              continue
-            fi
-            if [[ "$digest" == "$latest_digest" || "$digest" == "$version_digest" ]]; then
-              echo "Cannot remove tag $tag without deleting a retained image" >&2
-              exit 1
-            fi
-
-            status="$({
-              curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
-                --request DELETE \
-                --header "Authorization: Bearer ${registry_token}" \
-                "https://ghcr.io/v2/${repository}/manifests/${digest}"
-            })"
-            if [[ "$status" != "202" ]]; then
-              echo "Failed to remove obsolete tag $tag: GHCR returned $status" >&2
-              exit 1
-            fi
-            deleted[$digest]=1
+          for version_id in "${obsolete_versions[@]}"; do
+            echo "Deleting obsolete package version ${version_id}"
+            gh api --method DELETE \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              "${endpoint}/${version_id}"
           done
 
       - name: Create GitHub release
